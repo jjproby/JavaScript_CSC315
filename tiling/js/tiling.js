@@ -19,7 +19,10 @@
 // the radius of the smallest circle
 // in which a hexagon will fit (before
 // its vertices are moved)
-var SIZE_OF_HEXAGON = 0.18;
+//original was 0.18
+//0.01 does not work
+//0.03 is the smallest it can be
+var SIZE_OF_HEXAGON = 0.20;
 
 // a small number to use in
 // comparing floating point values
@@ -47,7 +50,7 @@ function makeIntervalChecker( minimum, maximum ) {
 var xChecker = makeIntervalChecker( xMin, xMax );
 var yChecker = makeIntervalChecker( yMin, yMax );
 
-// define a function 
+// define a function
 function makeRegionChecker( xChecker, yChecker ) {
   return function regionChecker( x, y ) {
     return xChecker(x) && yChecker(y);
@@ -204,9 +207,9 @@ console.log( "p0.y = " + p0.getY() );
 console.log( "p1 = " + p1.toString() );
 console.log( "p1.x = " + p1.getX() );
 console.log( "p1.y = " + p1.getY() );
-console.log( p2.toString() + " = " + v2.toString() + "? " + 
+console.log( p2.toString() + " = " + v2.toString() + "? " +
   p2.isApproximatelyEqual( v2 ) );
-console.log( p2.toString() + " = " + p1.toString() + "? " + 
+console.log( p2.toString() + " = " + p1.toString() + "? " +
   p2.isApproximatelyEqual( p1 ) );
 
 p1.setX(  1 );
@@ -328,7 +331,7 @@ function list() {
 
       if( found ) {
         return currentElement;
-      } // if
+      } // ifshiftFunction
       else {
         return null;
       } // else
@@ -341,7 +344,7 @@ function list() {
     if( private.head === null ) {
       return false;
     } // if
-    else {
+    else {shiftFunction
       var found = false;
       var current = private.head;
 
@@ -457,7 +460,8 @@ console.log( "number of distinct values in bank = " + safe.getSize() );
 var elem = document.getElementById('tiling');
 
 // specify the size of the picture
-var two = new Two({ width: 512, height: 512}).appendTo( elem );
+//width: 512, height: 512
+var two = new Two({ width: 1800, height: 800}).appendTo( elem );
 
 // a function to create an object
 // that contains polygons that fill
@@ -513,8 +517,8 @@ var makeTiles = function() {
           var vertices = [];
 
           var i;
-          for( i = 0; i < 6; i++ ) {
-              var angle = (i/6) * 2 * Math.PI;
+          for( i = 0; i < 6; i++ ) {//0 to 6
+              var angle = (i/6) * 5 * Math.PI; //(i/6) * 2 * Math.PI
               var xCoordinate = xc + majorRadius * Math.cos( angle );
               var yCoordinate = yc + majorRadius * Math.sin( angle );
               var vertex = point( xCoordinate, yCoordinate );
@@ -546,10 +550,10 @@ var makeTiles = function() {
           e = bankOfEdges.get( e );
 
           for( i = 0; i < 6; i += 1 ) {
-              angle = (i/6) * 2 * Math.PI;
+              angle = (i/6) * 2 * Math.PI;//MATH.
               angle += Math.PI/6;
-              xCoordinate = xc + 2.0 * innerRadius * Math.cos( angle );
-              yCoordinate = yc + 2.0 * innerRadius * Math.sin( angle );
+              xCoordinate = xc + 1.0 * innerRadius * Math.cos( angle );//2.0
+              yCoordinate = yc + 1.0 * innerRadius * Math.sin( angle );//2.0
               centerOfNeighbor = point( xCoordinate, yCoordinate );
 
               makeHexagon( centerOfNeighbor );
@@ -566,7 +570,7 @@ var makeTiles = function() {
     makeHexagon( centerOfFirstHexagon );
 
     // return an object that contains 3 arrays
-    return { 
+    return {
         polygons: bankOfPolygons.getArray(),
         edges: bankOfEdges.getArray(),
         vertices: bankOfVertices.getArray()
@@ -577,7 +581,7 @@ var makeTiles = function() {
 // with which the two.js  library works
 // color each hexagon, perturb the locations of its vertices,
 // rotate the hexagon, and scale the hexagon using the
-// parameters (4 functions of x and y) 
+// parameters (4 functions of x and y)
 var makeGroup = function( colorFunction, shiftFunction, rotationFunction,
     scalingFunction ) {
   var groupOfHexagons = two.makeGroup();
@@ -588,18 +592,19 @@ var makeGroup = function( colorFunction, shiftFunction, rotationFunction,
   for( var i = 0; i < vertices.length; i++ ) {
       var p = vertices[i];
 
-      var offset = shiftFunction( p.getX(), p.getY() ); 
+      var offset = shiftFunction( p.getX(), p.getY() );
 
       p.setX( p.getX() + offset.getX() );
       p.setY( p.getY() + offset.getY() );
-  } // for 
+  } // for
 
   var tiles = t.polygons;
 
   for( var i = 0; i < tiles.length; i++ ) {
     var hexagon = tiles[i];
     var anchors = [];
-    for( var j = 0; j < 6; j++ ) {
+    var sides = Math.floor(Math.random() * 6) + 1;
+    for( var j = 0; j < sides; j++ ) {//6
       var p = hexagon.getVertex(j);
 
       anchors.push( new Two.Anchor( p.getX(), p.getY() ) );
@@ -608,12 +613,16 @@ var makeGroup = function( colorFunction, shiftFunction, rotationFunction,
     var path = two.makePath( anchors, true, false );
     var cx = hexagon.getCenter().getX();
     var cy = hexagon.getCenter().getY();
-    path.fill = colorFunction( cx, cy ); 
+    path.fill = colorFunction( cx, cy );
     path.stroke = "#88AAFF";
-    path.linewidth = 0.01;
+    path.linewidth = 0.01;//0.01
     path.rotation = rotationFunction( cx, cy );
     path.scale = scalingFunction( cx, cy );
+    var text = new Two.Text("HELP PLS", cx, cy);
+    text.size = Math.random() * .08;
+    text.fill = "BLACK";
     groupOfHexagons.add( path );
+    groupOfHexagons.add( text );
   } // for
 
   return groupOfHexagons;
@@ -630,7 +639,7 @@ var weightedAverage = function( a, b, t ) {
 
 // return a scaled distance (0.0 to 1.0)
 // of a point from the center of a drawing
-// area whose center is at (0.0, 0.0) and 
+// area whose center is at (0.0, 0.0) and
 // that is bounded by a square whose lower
 // left corner is at (-1.0, -1.0) and upper
 // right corner is at (+1.0, +1.0)
@@ -648,15 +657,18 @@ var colorFunction = function( x, y ) {
 
   // you might find this function useful
   var randomColor = function() {
-    var red = Math.trunc(128 + 128 * Math.random());
-    var green = Math.trunc(128 + 128 * Math.random());
-    var blue = Math.trunc(128 + 128 * Math.random());
+    //var red = Math.trunc(128 + 128 * Math.random());
+    var red = Math.floor(Math.random() * 256) + 1;
+    var green = Math.floor(Math.random() * 256) + 1;
+    var blue = Math.floor(Math.random() * 256) + 1;
+    //var green = Math.trunc(128 + 128 * Math.random());
+    //var blue = Math.trunc(128 + 128 * Math.random());
 
     return rgbColor( red, green, blue );
   }; // randomColor()
 
   // try something different!
-  return rgbColor( 224, 206, 192 );
+  return randomColor();
 }; // colorFunction()
 
 // a function to perturb the coordinates of
@@ -674,7 +686,7 @@ var shiftFunction = function(x, y) {
       x = radius * Math.random();
       y = radius * Math.random();
       distance = Math.sqrt(x * x + y * y);
-      found = distance < radius; 
+      found = distance < radius;
     } // while
 
     return point(x, y);
@@ -698,14 +710,16 @@ var rotationFunction = function( x, y ) {
 var scalingFunction = function( x, y ) {
   // for now, no scaling
   // try something different
-  return 1.0;
+  //return 1.0;//1.0
+  //return Math.floor(Math.random() * 2) + 0.5
+  return Math.random();
+  //return Math.random() + .5;
 }; // scalingFunction()
 
 var picture = makeGroup( colorFunction, shiftFunction,
   rotationFunction, scalingFunction );
 
-picture.scale = two.width/2;
+picture.scale = two.width/4;
 picture.translation.set( two.width/2, two.height/2 );
 
 two.update();
-
